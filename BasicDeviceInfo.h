@@ -1,0 +1,46 @@
+#ifndef BASICDEVICEINFO_H
+#define BASICDEVICEINFO_H
+
+
+#define BASIC_AP_SSID 		"B182"
+#define	BASIC_AP_PASS 		"12345678"
+#define BASIC_STA_HOSTNAME	"Binary182"
+
+#define BASIC_LOCAL_IP1	182
+#define BASIC_LOCAL_IP2	182
+#define BASIC_LOCAL_IP3	182
+#define BASIC_LOCAL_IP4	182
+#define	BASIC_GATEWAY1	182
+#define	BASIC_GATEWAY2	182
+#define	BASIC_GATEWAY3	182
+#define	BASIC_GATEWAY4	182
+#define	BASIC_SUBNET1	255
+#define	BASIC_SUBNET2	255
+#define	BASIC_SUBNET3	255
+#define	BASIC_SUBNET4	0
+
+
+
+#if 0
+#define DATA_SSID1 		1
+#define DATA_SSID2 		2
+#define DATA_SSID3 		3
+#define DATA_SSID4 		4
+#define DATA_SSID5 		5
+#define DATA_PASS1 		6
+#define DATA_PASS2 		7
+#define DATA_PASS3 		8
+#define DATA_PASS4 		9
+#define DATA_PASS5 		10
+#define DATA_AUTH		11
+#define DATA_APSSID		12
+#define DATA_APPASS		13
+#define DATA_SSIDNOW	14
+#define DATA_PASSNOW	15
+#define DATA_LOCALIP	16
+#define DATA_GETWAY		17
+#define DATA_SUBNET		18
+#endif
+
+
+#endif
