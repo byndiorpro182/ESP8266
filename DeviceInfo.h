@@ -71,3 +71,4 @@ bool DeviceInfo::setValuePin(uint8_t pin, uint8_t value){
 
 
 #endif
+

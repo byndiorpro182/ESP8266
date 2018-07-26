@@ -31,7 +31,17 @@ void setup() {
      // Kiem tra neu client(STA) chua duoc ket noi.
      // Kiem tra tiep tuc neu khong duoc ket noi den IP va PORT cua server(AP
      // thi in ra serial terminal chuoi "connection failed".
-     if(Serial.available() > 0){
+       if (!client.connect(server_ip, PORT)) {
+         //Serial.println("connection failed");
+          blnprint("khong ket noi duoc");
+         delay(1000);
+         return;
+       }
+       uint32_t timesend = millis();
+       uint32_t dem = 0;
+       while(client.connected()){
+        
+         if(Serial.available() > 0){
       String str = "";
       while(Serial.available() > 0){
       str += (char)Serial.read();  
@@ -45,14 +55,13 @@ void setup() {
       bRemoveNote();
       return;
     }
-
-      if (!client.connect(server_ip, PORT)) {
-         //Serial.println("connection failed");
-          blnprint("khong ket noi duoc");
-         delay(1000);
-         return;
-       }
-       blnprint("client send : " + str);
+    blnprint("client send : " + str);
+    uint16_t len = str.length();
+    char header[] = {'t','t'};
+        client.write(170);      
+        client.write(header);
+        client.write(len/255);
+        client.write(len%255);
         client.print(str);
        unsigned long timeout = millis();
   while (client.available() == 0) {
@@ -66,9 +75,36 @@ void setup() {
     while(client.available()){
       bprint((String)(char)client.read());
     }
+       }else{
+        if(millis() - timesend > 10000){
+         client.write(170);
+         client.write((uint8_t)0);
+        client.write(200);
+        String str = "hieu=123&hoang=abc&van=x12@";
+        client.write((uint8_t)str.length()/255);
+        client.write((uint8_t)str.length()%255);
+        client.write(str.c_str());
+        client.flush();
+               unsigned long timeout = millis();
+        while (client.available() == 0) {
+          if (millis() - timeout > 3000) {
+            blnprint("ko thay phan hoi");
+            client.stop();
+            return;
+          }
+        }
+        delay(1000);
+          blnprint("server send : ");
+        while(client.available())
+          bprint((String)(uint8_t)client.read() + ",");
+      
+         timesend = millis(); 
+        }
+       }
+       yield();
      }
-  }else{
-    blnprint("mat ket noi");
-    delay(1000);
-  }
+    blnprint("mat ket noi, chuan bi ket noi lai");
+    delay(3000);
 }
+
+ }

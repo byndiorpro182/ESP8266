@@ -1,0 +1,103 @@
+#if 0
+#include <Arduino.h>
+#define DEBUG_WRITE_SERIAL
+#define DEBUG_WRITE_LOG
+#include <ESP8266WiFi.h>
+#include "tcpclient.h"
+
+const char* ssid = "DuongBui";
+const char* password = "19011980";
+tcpclient client(192,168,1,75,23);
+void setup()
+{
+    bRemoveNote();
+    bprint("\r\n\n\n--------------Start---------");
+    WiFi.begin(ssid,password);
+    while(WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        blnprint(".");
+    }
+
+    if(!client.connect()){
+        blnprint("khong ket noi duoc");
+        delay(1000);
+    }
+}
+
+void loop()
+{
+    if(!client.connected()){
+      delay(2000);
+      blnprint("dang ket noi lai");
+      client.connect();
+    }
+    if(Serial.available() > 0){
+        String str1 = "";
+        String str2 = "";
+        while(Serial.available() > 0){
+            if((char)Serial.peek() == ',')
+                break;
+            str1 += (char)Serial.read();
+        }
+        while(Serial.available() > 0){
+            str2 += (char)Serial.read();
+        }
+        uint16_t command = str1.toInt();
+        if(command > 255 || command < 0)
+            return;
+        client.sendMessageToServer(command,str2);
+    }
+    client.sendMessageToServer(200);
+    client.waitForServer();
+}
+
+
+
+
+
+
+
+
+#else
+
+
+
+#include <Arduino.h>
+#define DEBUG_WRITE_SERIAL
+#define DEBUG_WRITE_LOG
+#include <ESP8266WiFi.h>
+#include "tcpserver.h"
+
+const char* ssid = "DuongBui";
+const char* password = "19011980";
+tcpServer server(23);
+void setup(){
+	//bprint("\r\n\n\n--------------Start---------");
+  WiFi.begin(ssid,password);
+    while(WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    //Serial.print(".");
+    blnprint(".");
+  } 
+
+  blnprint("ket noi thanh cong");
+  blnprint((String)WiFi.localIP());
+  server.begin();
+}
+void loop(){
+  server.handleClient();
+        if (Serial.available() > 0){
+    String str = "";
+    while(Serial.available() > 0){
+      str += (char)Serial.read();  
+    }
+    if(str == "log"){
+      bReadNote();
+    }
+    if(str == "deletelog"){
+      bRemoveNote();
+    }
+  }
+}
+
+#endif

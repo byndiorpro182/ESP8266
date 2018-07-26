@@ -4,14 +4,14 @@
 #include <ESP8266WiFi.h>;
 #include "log.h"
 #include <ESP8266WiFi.h>
-#include <WiFiClient.h>
+//#include <WiFiClient.h>
 
 // Hardcode WiFi parameters as this isn't going to be moving around.
 const char* ssid = "DuongBui";
 const char* password = "19011980";
 
 // Start a TCP Server on port 5045
-WiFiServer server(23);
+WiFiServer server(5045);
 
 void setup() {
   //Serial.begin(115200);

@@ -1,0 +1,254 @@
+#define DEBUG_WRITE_SERIAL
+#define DEBUG_WRITE_LOG
+#define HAN_UPDATE         (1)      // update pin
+#define HAN_WIFI_STATUS     (2)
+#define HAN_PROJECT       (3)
+#define HAN_DISCONNECT      (4)
+#define HAN_BLYNK_CONFIG    (5)
+#define HAN_BLYNK_DISCONNECT  (6)
+#define HAN_CONNECT       (7)
+#define HAN_DATA_WRITE      (8)
+#define HAN_DATA_READ       (9)
+#define HAN_UPDATE_SKETCH     (10)
+#define HAN_SETUP               (11)
+#define HAN_SERVER_HANDLE       (12)
+#define HAN_DATA                (13)
+#define HAN_SCAN_NETWORKS       (14)
+#define HAN_PING        (15)
+#define HAN_IR_RECV       (16)
+#define HAN_IR_SEND       (17)
+#define HAN_BINARY_VERSION    (18)
+
+
+#include "debug/log.h"
+#include "memory/memoryFile.h"
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+const char* ssid = "DuongBui";
+const char* password = "19011980";
+ESP8266WebServer server(80);
+File fsUploadFile;
+
+static const char serverIndex[] PROGMEM ="<html><body><form method='POST' action='' enctype='multipart/form-data'><input type='file' name='update' multiple><input type='text' name='abc'><input type='submit' value='Update'></form></body></html>";
+
+String getContentType(String filename){
+  if(server.hasArg("download")) return "application/octet-stream";
+  else if(filename.endsWith(".htm")) return "text/html";
+  else if(filename.endsWith(".html")) return "text/html";
+  else if(filename.endsWith(".css")) return "text/css";
+  else if(filename.endsWith(".js")) return "application/javascript";
+  else if(filename.endsWith(".png")) return "image/png";
+  else if(filename.endsWith(".gif")) return "image/gif";
+  else if(filename.endsWith(".jpg")) return "image/jpeg";
+  else if(filename.endsWith(".ico")) return "image/x-icon";
+  else if(filename.endsWith(".xml")) return "text/xml";
+  else if(filename.endsWith(".pdf")) return "application/x-pdf";
+  else if(filename.endsWith(".zip")) return "application/x-zip";
+  else if(filename.endsWith(".gz")) return "application/x-gzip";
+  return "text/plain";
+}
+
+bool handleFileRead(String path){
+  
+  blnprint("handleFileRead: " + path);
+  if(path.endsWith("/")) path += "index.htm";
+  String contentType = getContentType(path);
+  String pathWithGz = path + ".gz";
+  if(SPIFFS.exists(pathWithGz) || SPIFFS.exists(path)){
+    if(SPIFFS.exists(pathWithGz))
+      path += ".gz";
+    File file = SPIFFS.open(path, "r");
+    size_t sent = server.streamFile(file, contentType);
+    file.close();
+    return true;
+  }
+  return false;
+}
+void upfile(){
+  HTTPUpload& upload = server.upload();
+  blnprintf("URI : %s, ARGUMENTS : %d", server.uri().c_str(), (uint8_t)server.args());
+    for (uint8_t i = 0; i < server.args(); i++){
+        bprintf(" %s = %s ||",server.argName(i).c_str(),server.arg(i).c_str());
+    }
+  if(upload.status == UPLOAD_FILE_START){
+    String filename = upload.filename;
+    if(!filename.startsWith("/")) filename = "/"+filename;
+    blnprint("handleFileUpload Name: "); bprint(filename);
+    fsUploadFile = SPIFFS.open(filename, "w");
+    filename = String();
+  } else if(upload.status == UPLOAD_FILE_WRITE){
+    //DBG_OUTPUT_PORT.print("handleFileUpload Data: "); DBG_OUTPUT_PORT.println(upload.currentSize);
+    if(fsUploadFile)
+      fsUploadFile.write(upload.buf, upload.currentSize);
+  } else if(upload.status == UPLOAD_FILE_END){
+    if(fsUploadFile)
+      fsUploadFile.close();
+    blnprint("handleFileUpload Size: "); bprint((String)upload.totalSize);
+  }
+}
+
+void handleNotFound(){
+  blnprint("URI : " + server.uri());
+  if(!DiskD.existsFile(server.uri())){
+    String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET)?"GET":"POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i=0; i<server.args(); i++){
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
+  return;
+  }
+  server.on(server.uri(), HTTP_GET, [](){
+    handleFileRead(server.uri());
+    });
+  
+  
+}
+
+
+void listfile(){
+  DiskD.openDir("/");
+  String str = "";
+  while(DiskD.available()){
+    str += DiskD.fileNameFromDir() + ",\n";
+  }
+  server.send(200,"text/plain", str);
+}
+void http_handle()
+{
+  blnprintf("URI : %s, ARGUMENTS : %d", server.uri().c_str(), (uint8_t)server.args());
+    #ifdef DEBUG_SERIAL
+    for (uint8_t i = 0; i < server.args(); i++){
+        bprintf(" %s = %s ||",server.argName(i).c_str(),server.arg(i).c_str());
+    }
+    #endif
+
+  int han = server.arg("han").toInt();
+
+  switch (han)
+  {
+    case HAN_UPDATE:
+          {                           // http://ip/handle?han=1&pin=2&value=1
+            if (server.arg("value") != "")
+            {
+              if(server.arg("pin")=="0"||server.arg("pin")=="2"||server.arg("pin")=="4"||server.arg("pin")=="5"||server.arg("pin")=="12"||server.arg("pin")=="13"||server.arg("pin")=="14"||server.arg("pin")=="15"||server.arg("pin")=="16" ||server.arg("pin")=="00"||server.arg("pin")=="02"||server.arg("pin")=="04"||server.arg("pin")=="05")
+              {
+                digitalWrite(server.arg("pin").toInt(),server.arg("value").toInt());
+                server.send(200,"text/plain","");
+                break;
+              } 
+            }
+            server.send(200,"text/plain","false");
+            break;
+          }
+    case HAN_WIFI_STATUS:
+          {                                                 // http://ip/handle?han=2
+            String content = "";
+            if ( WiFi.status() == WL_CONNECTED ){
+              content += (WiFi.SSID());
+            }
+            server.send(200, "text/plain", content);
+            break;
+          }
+    case HAN_PROJECT:                            // http://ip/handle?han=3
+          {
+            String content = "";
+            for (int i = 0; i < 17; i++)
+            {
+              if(i==1||i==3||i == 6 || i == 7 || i==8 || i==9 || i==10 || i==11) continue;
+              content += String(digitalRead(i));
+            }
+                server.send(200, "text/plain", content);
+                break;
+            }
+    case HAN_DISCONNECT:                    // http://ip/handle?han=4
+          {
+            server.send(200, "text/plain", "true");
+            //WiFi.disconnect(true);  
+            break;
+          }
+    case HAN_BLYNK_CONFIG:          // http://ip/handle?han=5
+          {
+            if(true)
+            {
+              server.send(200,"text/plain", "true");
+              break;
+            }
+            server.send(200,"text/plain", "false");
+            break;
+          }
+    case HAN_BLYNK_DISCONNECT:            // http://ip/handle?han=6
+          {
+            server.send(200, "text/plain", "true");
+            //Blynk.disconnect();
+            break;
+          }
+    case HAN_CONNECT:                          // http://ip/handle?han=7&sta_ssid=DuongBui&sta_pass=19011980
+          {
+            if(server.arg("sta_ssid") != "")
+            {
+              if(true){
+                server.send(200,"text/plain", "true"); delay(2);
+                break;
+              }
+            }
+            server.send(200,"text/plain", "false");
+            break;  
+          }
+    case HAN_SCAN_NETWORKS:   //http://ip/handle?han=14   
+          { 
+            String s = "";
+            int total_wifi = WiFi.scanNetworks(); delay(20);
+            for ( int i = 0; i < total_wifi; ++i)
+            {
+              s += WiFi.SSID(i) + ",";
+            }
+            server.send(200,"text/plain",s);
+            break;
+          }
+    default :
+    {
+          server.send(404, "text/plain", "error");  
+    }
+  }
+}
+
+void setup(){
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+    Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  server.on("/handle",http_handle);
+  server.on("/list", HTTP_GET,listfile);
+  server.on("/upfile", HTTP_GET, [](){
+      server.send(200, "text/html", serverIndex);
+    });
+  server.on("/upfile", HTTP_POST, [](){ server.send(200, "text/plain", "ok"); }, upfile);
+
+  server.on("/inline", [](){
+    server.send(200, "text/plain", "this works as well");
+  });
+  
+  server.onNotFound(handleNotFound);
+
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+void loop(){
+  server.handleClient();
+}
