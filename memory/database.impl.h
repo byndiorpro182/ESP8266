@@ -6,6 +6,11 @@ dataBase::dataBase(){
     blnprint("[DATABASE] Begin database done.");
 }
 
+dataBase::~dataBase(){
+    EEPROM.end();
+    blnprint("[DATABASE] Close database done.");
+}
+
 bool dataBase::checkPage(uint8_t page){
     if(page > 0)
         if(page < TOTAL_PAGES)
@@ -50,7 +55,8 @@ String dataBase::exportData(uint8_t page){
 }
 
 bool dataBase::importDataToAddress(uint16_t address, uint8_t value){
-    EEPROM.write(address,value);
+    if(EEPROM.read(address) != value)
+        EEPROM.write(address,value);
     EEPROM.commit();
     return 1;
 }

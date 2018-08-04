@@ -1,9 +1,9 @@
 #ifndef LOG_H
 #define LOG_H
 #include <Arduino.h>
+#include <FS.h>
 
 #ifdef DEBUG_WRITE_LOG
-    #include <FS.h>
     #define URL_FILE_LOG    "/log.txt"
 #endif
 
@@ -15,14 +15,19 @@
 class NoteBook{
     public:
         NoteBook(){
+            //SPIFFS.format();
+            SPIFFS.begin();
+            //SPIFFS.remove(URL_FILE_LOG);
+            #ifdef DEBUG_WRITE_LOG
+                File f = SPIFFS.open(URL_FILE_LOG, "a");
+                if(f)
+                    f.print("\n.\n.\n1\n2\n3\n[LOG] SPIFFS and LOG begin finish.");
+                f.close();
+            #endif
             #ifdef DEBUG_WRITE_SERIAL
                 BSERIAL.begin(BSERIAL_BAUD);
                 while(!BSERIAL)
                     delay(100);
-            #endif
-            #ifdef DEBUG_WRITE_LOG
-                SPIFFS.begin();
-                //SPIFFS.remove(URL_FILE_LOG);
             #endif
         }
 };

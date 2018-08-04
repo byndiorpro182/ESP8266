@@ -46,6 +46,7 @@
 #define DATA_UPDATE     19
 #define DATA_FIRST_RUN	25
 
+#define DATA_ADDRESS_SAVE_WIFI 21
 #define DATA_LOCAL_IP1	641
 #define DATA_LOCAL_IP2	642
 #define DATA_LOCAL_IP3	643
@@ -58,6 +59,10 @@
 #define DATA_SUBNET2	722
 #define DATA_SUBNET3	723
 #define DATA_SUBNET4	724
+
+
+#define FILE_CUT_MAX_SIZE    51200
+
 
 enum serverCmd
 {
@@ -83,7 +88,8 @@ enum serverCmd
     GET_USED_BYTES_FILE     = 37,
     GET_FULL_INFO_FILE      = 38,
     UPDATE_FROM_FILE        = 45,
-    UPDATE_STATUS           = 46,
+    STATUS_UPDATE_FILE      = 46,
+    SUB_FILE                = 47,
 
     GET_STA_STATUS         = 50,
     SET_STA_CONNECT        = 51,
@@ -106,6 +112,13 @@ enum serverCmd
     GET_AP_STA_CONECTEDS    = 82,
     GET_AP_IP               = 83,
     GET_AP_MAC              = 84,
+    GET_AP_GATEWAY          = 85,
+    GET_AP_SUBNET           = 86,
+    SET_AP_SSID             = 87,
+    SET_AP_PASS             = 88,
+    SET_AP_IP               = 89,
+    SET_AP_GATEWAY          = 90,
+    SET_AP_SUBNET           = 91,
 
     RETURN_ARGUMENTS_TO_JSON = 100,
 
@@ -126,7 +139,16 @@ enum serverCmd
     GET_ESP_CYCLE_COUNT         = 124,  // số chu kỳ cpu chạy được từ khi bắt đầu
     GET_ESP_VCC                 = 125,  // đọc điện áp nguồn cấp cho esp nhưng phải bỏ chân A0 đi -> bỏ API chức năng này
 
+    GET_BLYNK_CONNECTED         = 140,
+    SET_BLYNK_CONNECT           = 141,
+
+
     GET_PING_HOST               = 150,
+    GET_PING_IP                 = 151,
+
+    HTTP_SET_URL            = 160,
+    HTTP_DOWNLOAD           = 161,
+    HTTP_DOWNLOAD_LIST      = 162,
 
     NOTIFY_PING             = 200,
 

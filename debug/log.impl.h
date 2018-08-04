@@ -17,7 +17,7 @@ String getTimeFromTheStart(){
     s = millis()/1000;
     m = s/60;
     h = m/60;
-    return getStringf("[%02d:%02d:%02d:%03d] ", h, m%60, s%60, millis()%1000);
+    return getStringf("[%02d:%02d:%02d][%03d] ", h, m%60, s%60, millis()%1000);
 }
 
 void bReadNote(){
@@ -76,15 +76,17 @@ void bprint(char c){
 }
 
 void bprintf(const char *fmt, ...){
-    char buf[255];
-    String str = "";
-    va_list ap;
-    va_start (ap, fmt );
-    uint8_t len = vsnprintf(buf, 255, fmt, ap);
-    va_end (ap);
-    for (uint8_t i = 0; i < len; i++)
-        str += buf[i];
-    bprint(str);
+    #if defined(DEBUG_WRITE_LOG) || defined(DEBUG_WRITE_SERIAL)
+        char buf[255];
+        String str = "";
+        va_list ap;
+        va_start (ap, fmt );
+        uint8_t len = vsnprintf(buf, 255, fmt, ap);
+        va_end (ap);
+        for (uint8_t i = 0; i < len; i++)
+            str += buf[i];
+        bprint(str);
+    #endif
 }
 
 void blnprint(void){
@@ -113,14 +115,16 @@ void blnprint(String str){
 }
 
 void blnprintf(const char *fmt, ...){
-    char buf[255];
-    String str = "";
-    va_list ap;
-    va_start (ap, fmt );
-    uint8_t len = vsnprintf(buf, 255, fmt, ap);
-    va_end (ap);
-    for (uint8_t i = 0; i < len; i++)
-        str += buf[i];
-    bprint("\r\n" + getTimeFromTheStart() + str);
+    #if defined(DEBUG_WRITE_LOG) || defined(DEBUG_WRITE_SERIAL)
+        char buf[255];
+        String str = "";
+        va_list ap;
+        va_start (ap, fmt );
+        uint8_t len = vsnprintf(buf, 255, fmt, ap);
+        va_end (ap);
+        for (uint8_t i = 0; i < len; i++)
+            str += buf[i];
+        bprint("\r\n" + getTimeFromTheStart() + str);
+    #endif
 }
 
